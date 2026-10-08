@@ -1,7 +1,7 @@
 // Offline support. Network first, so new versions show up on the next load,
 // with the cached copy as a fallback when there is no connection.
 
-const CACHE = 'headsup-v1';
+const CACHE = 'headsup-v2';
 const FILES = [
   './',
   'index.html',
