@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e5bd8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Heads Up">
+  <title>Heads Up</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <section class="screen" data-screen="home">
+    <header class="bar">
+      <h1>Heads Up</h1>
+      <button class="ghost" data-go="settings">Settings</button>
+    </header>
+    <div id="deck-list" class="deck-list"></div>
+    <div class="row">
+      <button class="primary" id="new-deck">New deck</button>
+      <label class="button secondary">Import file<input type="file" id="import-file" accept=".json,.txt,.csv,application/json,text/plain,text/csv" hidden></label>
+    </div>
+    <p class="hint">Tip: use Add to Home Screen in your browser's share menu to play full screen.</p>
+  </section>
+
+  <section class="screen" data-screen="deck" hidden>
+    <header class="bar"><button class="ghost" data-go="home">‹ Decks</button></header>
+    <h2 id="deck-name"></h2>
+    <p id="deck-desc" class="muted"></p>
+    <p id="deck-meta" class="meta"></p>
+    <button class="play" id="play">Play</button>
+    <div class="row" id="deck-actions">
+      <button class="secondary" id="edit-deck">Edit</button>
+      <button class="secondary" id="share-deck">Share link</button>
+      <button class="secondary" id="export-deck">Export file</button>
+      <button class="danger" id="delete-deck">Delete</button>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="editor" hidden>
+    <header class="bar">
+      <button class="ghost" id="editor-cancel">Cancel</button>
+      <h2 id="editor-title">New deck</h2>
+      <button class="primary small" id="editor-save">Save</button>
+    </header>
+    <label class="field">Name<input id="editor-name" maxlength="60" autocomplete="off"></label>
+    <label class="field">Description <span class="muted">(optional)</span><input id="editor-desc" maxlength="140" autocomplete="off"></label>
+    <label class="field">Cards, one per line <span class="muted" id="editor-count">0 cards</span>
+      <textarea id="editor-cards" rows="14" placeholder="Titanic&#10;Jurassic Park&#10;The Matrix"></textarea>
+    </label>
+    <p class="error" id="editor-error" role="alert"></p>
+  </section>
+
+  <section class="screen" data-screen="settings" hidden>
+    <header class="bar"><button class="ghost" data-go="home">‹ Decks</button><h2>Settings</h2><span></span></header>
+    <label class="field">Round length
+      <select id="set-seconds">
+        <option value="30">30 seconds</option>
+        <option value="60">60 seconds</option>
+        <option value="90">90 seconds</option>
+        <option value="120">2 minutes</option>
+      </select>
+    </label>
+    <label class="field">Tilt needed: <span id="set-trigger-val">45°</span>
+      <input type="range" id="set-trigger" min="30" max="60" step="5">
+      <span class="muted">Lower is more sensitive.</span>
+    </label>
+    <label class="toggle"><input type="checkbox" id="set-swap"> Swap correct and pass</label>
+    <label class="toggle"><input type="checkbox" id="set-sound"> Sounds</label>
+    <label class="toggle"><input type="checkbox" id="set-tap"> Always show Correct and Pass buttons</label>
+    <p><a href="sensor-test.html">Open the sensor test page</a></p>
+  </section>
+
+  <section class="screen" data-screen="stage" hidden>
+    <div id="stage" class="stage" data-view="ready">
+      <button class="quit" id="quit" aria-label="Quit round">✕</button>
+      <div class="view ready-view">
+        <p class="deck-label" id="stage-deck"></p>
+        <p class="big" id="ready-title">Place on forehead</p>
+        <p class="sub" id="ready-sub">Screen facing out. Nod down for correct, tilt back to pass.</p>
+        <button class="primary" id="tap-start" hidden>Tap to start</button>
+      </div>
+      <div class="view countdown-view"><p class="count" id="count">3</p></div>
+      <div class="view play-view">
+        <p class="timer" id="timer">1:00</p>
+        <p class="card-text" id="card"></p>
+        <div class="feedback" id="feedback"></div>
+        <button class="tap tap-pass" id="tap-pass">Pass</button>
+        <button class="tap tap-correct" id="tap-correct">Correct</button>
+      </div>
+      <div class="view timeup-view"><p class="big" id="timeup-text">Time!</p></div>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="results" hidden>
+    <p class="score" id="result-score">0</p>
+    <p class="meta" id="result-best"></p>
+    <ol class="result-list" id="result-list"></ol>
+    <div class="row">
+      <button class="play" id="play-again">Play again</button>
+      <button class="secondary" data-go="home">Decks</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

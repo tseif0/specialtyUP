@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sensor Test</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #10131a; color: #f2f4f8; }
+    main { max-width: 640px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 22px; margin: 8px 0 4px; }
+    p { color: #a9b1c2; line-height: 1.4; }
+    button { font: inherit; font-size: 18px; padding: 12px 20px; border: 0; border-radius: 12px; background: #2f6fed; color: #fff; }
+    .state { margin: 16px 0; padding: 28px 16px; border-radius: 16px; text-align: center; font-size: 40px; font-weight: 800; background: #222837; transition: background .15s; }
+    .state.correct { background: #1f9d55; }
+    .state.pass { background: #e07b16; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cell { background: #1a1f2b; border-radius: 12px; padding: 10px 12px; }
+    .cell b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+    .cell span { color: #a9b1c2; font-size: 13px; }
+    .meter { position: relative; height: 28px; background: #1a1f2b; border-radius: 14px; margin: 12px 0; overflow: hidden; }
+    .meter i { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: #fff; left: 50%; }
+    .meter .zone { position: absolute; top: 0; bottom: 0; opacity: .35; }
+    label { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+    a { color: #8fb3ff; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Sensor test</h1>
+  <p>Hold the phone sideways on your forehead, screen facing out. Nod down for CORRECT, tilt your head back for PASS. Each gesture only counts again once the phone is back upright.</p>
+  <button id="start">Start sensors</button>
+  <div id="status" class="state">Not started</div>
+  <div class="meter" aria-hidden="true">
+    <div class="zone" id="zone-correct" style="left:0;background:#1f9d55"></div>
+    <div class="zone" id="zone-pass" style="right:0;background:#e07b16"></div>
+    <i id="needle"></i>
+  </div>
+  <div class="grid">
+    <div class="cell"><b id="tilt">–</b><span>tilt from upright (°)</span></div>
+    <div class="cell"><b id="counts">0 / 0</b><span>correct / pass</span></div>
+    <div class="cell"><b id="beta">–</b><span>beta (°)</span></div>
+    <div class="cell"><b id="gamma">–</b><span>gamma (°)</span></div>
+  </div>
+  <label>Tilt needed: <input id="sens" type="range" min="30" max="60" step="5" value="45"> <span id="sens-val">45°</span></label>
+  <label><input id="swap" type="checkbox"> Swap correct and pass</label>
+  <button id="calibrate">Set upright here</button>
+  <p><a href="./">Back to the game</a></p>
+</main>
+<script type="module">
+  import { requestMotionPermission, TiltDetector } from './js/motion.js';
+
+  const $ = (id) => document.getElementById(id);
+  const detector = new TiltDetector();
+  let counts = { correct: 0, pass: 0 };
+  let resetTimer;
+
+  function drawZones() {
+    const pct = (deg) => 50 * (1 - deg / 90);
+    $('zone-correct').style.width = pct(detector.triggerDeg) + '%';
+    $('zone-pass').style.width = pct(detector.triggerDeg) + '%';
+  }
+
+  function flash(kind) {
+    counts[kind]++;
+    $('counts').textContent = `${counts.correct} / ${counts.pass}`;
+    $('status').className = 'state ' + kind;
+    $('status').textContent = kind === 'correct' ? 'CORRECT' : 'PASS';
+    navigator.vibrate?.(60);
+  }
+
+  detector.addEventListener('tilt', (e) => {
+    const { tilt } = e.detail;
+    $('tilt').textContent = tilt.toFixed(0);
+    // Floor on the left, ceiling on the right.
+    $('needle').style.left = (50 + (tilt / 90) * 50) + '%';
+  });
+  detector.addEventListener('correct', () => flash('correct'));
+  detector.addEventListener('pass', () => flash('pass'));
+  detector.addEventListener('rearm', () => {
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      $('status').className = 'state';
+      $('status').textContent = 'Ready';
+    }, 250);
+  });
+  window.addEventListener('deviceorientation', (e) => {
+    if (e.beta == null) return;
+    $('beta').textContent = e.beta.toFixed(0);
+    $('gamma').textContent = e.gamma.toFixed(0);
+  });
+
+  $('start').addEventListener('click', async () => {
+    const result = await requestMotionPermission();
+    if (result !== 'granted') {
+      $('status').textContent = result === 'denied' ? 'Permission denied' : 'No motion sensor';
+      return;
+    }
+    detector.start();
+    $('status').textContent = 'Waiting for sensor…';
+    setTimeout(() => {
+      if (!detector.hasData) $('status').textContent = 'No sensor data. Is this page on https?';
+    }, 1500);
+  });
+  $('calibrate').addEventListener('click', () => detector.calibrate());
+  $('sens').addEventListener('input', (e) => {
+    detector.triggerDeg = Number(e.target.value);
+    $('sens-val').textContent = e.target.value + '°';
+    drawZones();
+  });
+  $('swap').addEventListener('change', (e) => { detector.swap = e.target.checked; });
+  drawZones();
+</script>
+</body>
+</html>
