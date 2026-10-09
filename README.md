@@ -1,6 +1,6 @@
-# Heads Up
+# Specialty Up
 
-A browser version of the Heads Up! party game. Hold the phone sideways on your forehead with the screen facing out, and your friends act out or describe the word.
+A Heads Up-style party game for our Specialty Lines team. Hold the phone sideways on your forehead with the screen facing out, and your teammates act out or describe the word.
 
 - Nod down (screen toward the floor) = correct
 - Tilt back (screen toward the ceiling) = pass

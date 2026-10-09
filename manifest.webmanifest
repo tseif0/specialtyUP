@@ -1,6 +1,6 @@
 {
-  "name": "Heads Up",
-  "short_name": "Heads Up",
+  "name": "Specialty Up",
+  "short_name": "Specialty Up",
   "description": "Guess the word on your forehead. Nod down for correct, tilt back to pass.",
   "start_url": "./",
   "scope": "./",
